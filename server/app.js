@@ -28,6 +28,8 @@ mssql.on("error", (err) => {
 });
 app.get("/", (req, res) => {});
 
+//------------ Admin Components ------------/
+
 app.post("/admin-login", (req, res) => {
   //1.1
   const { username, password } = req.body;
@@ -519,6 +521,206 @@ app.post("/total-points-account", async (req, res) => {
     const request = new mssql.Request();
     request.input("mobileNum", mssql.Char(11), mobileNum);
     const result = await request.query("Exec Total_Points_Account @mobileNum");
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+// ----------- Customer Components --------- //
+
+app.get("/all-service-plans", async (req, res) => {
+  //3.1
+  try {
+    await mssql.connect(config);
+    const result = await mssql.query("Select * from allServicePlans");
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/account-login-validation", async (req, res) => {
+  //3.2
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Both Username and Password must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+
+    request.input("username", mssql.Char(11), username);
+    request.input("password", mssql.Char(11), password);
+
+    const result = await request.query(`
+          DECLARE @result BIT;
+          SET @result = dbo.AccountLoginValidation(@username , @password);
+          SELECT @result AS result;
+        `);
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/consumption", async (req, res) => {
+  //3.3
+  try {
+    const { planName, startDate, endDate } = req.body;
+    if (!planName || !startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        error: "Both Plan Name and Date must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+
+    request.input("startDate", mssql.Date, startDate);
+    request.input("planName", mssql.VarChar(50), planName);
+    request.input("endDate", mssql.Date, endDate);
+
+    const result = await request.query(
+      " SELECT * FROM dbo.Consumption(@planName , @startDate , @endDate)"
+    );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/unsubscribed-plans", async (req, res) => {
+  //3.4
+  try {
+    const { mobileNum } = req.body;
+    if (!mobileNum) {
+      return res.status(400).json({
+        success: false,
+        error: "A Mobile Number must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    const result = await request.query("Exec Unsubscribed_Plans @mobileNum");
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/usage-plan-current-month", async (req, res) => {
+  //3.5
+  try {
+    const { mobileNum } = req.body;
+    if (!mobileNum) {
+      return res.status(400).json({
+        success: false,
+        error: "A Mobile Number must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    const result = await request.query(
+      "SELECT * FROM dbo.Usage_Plan_CurrentMonth(@mobileNum)"
+    );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/cashback-wallet-customer", async (req, res) => {
+  //3.6
+  try {
+    const { NID } = req.body;
+    if (!NID) {
+      return res.status(400).json({
+        success: false,
+        error: "A National Id must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    request.input("NID", mssql.Int, NID);
+    const result = await request.query(
+      "SELECT * FROM dbo.Cashback_Wallet_Customer(@NID)"
+    );
 
     res.json({
       error: null,
