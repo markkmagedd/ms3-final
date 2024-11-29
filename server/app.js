@@ -24,6 +24,7 @@ mssql.on("error", (err) => {
 app.get("/", (req, res) => {});
 
 app.post("/admin-login", (req, res) => {
+  //1.1
   const { username, password } = req.body;
   if (username != adminUsername || password != adminPassword) {
     return res.status(200).json({
@@ -36,6 +37,7 @@ app.post("/admin-login", (req, res) => {
 });
 
 app.get("/all-customer-accounts", async (req, res) => {
+  //1.2
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * from allCustomerAccounts");
@@ -56,6 +58,7 @@ app.get("/all-customer-accounts", async (req, res) => {
 });
 
 app.get("/physical-store-vouchers", async (req, res) => {
+  //1.3
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * from PhysicalStoreVouchers");
@@ -76,6 +79,7 @@ app.get("/physical-store-vouchers", async (req, res) => {
 });
 
 app.get("/all-resolved-tickets", async (req, res) => {
+  //1.4
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * from allResolvedTickets");
@@ -96,6 +100,7 @@ app.get("/all-resolved-tickets", async (req, res) => {
 });
 
 app.get("/account-plan", async (req, res) => {
+  //1.5
   try {
     await mssql.connect(config);
     const result = await mssql.query("EXEC Account_Plan");
@@ -116,6 +121,7 @@ app.get("/account-plan", async (req, res) => {
 });
 
 app.post("/account-plan-date", async (req, res) => {
+  //1.6
   try {
     const { date, planId } = req.body;
     if (!planId || !date) {
@@ -152,6 +158,7 @@ app.post("/account-plan-date", async (req, res) => {
 });
 
 app.post("/account-usage-plan", async (req, res) => {
+  //1.7
   try {
     const { mobileNum, date } = req.body;
     if (!mobileNum || !date) {
@@ -188,6 +195,7 @@ app.post("/account-usage-plan", async (req, res) => {
 });
 
 app.post("/benefits-account", async (req, res) => {
+  //1.8
   try {
     const { mobileNum, planId } = req.body;
     if (!mobileNum || !planId) {
@@ -224,6 +232,7 @@ app.post("/benefits-account", async (req, res) => {
 });
 
 app.post("/account-sms-offers", async (req, res) => {
+  //1.9
   try {
     const { mobileNum } = req.body;
     if (!mobileNum) {
