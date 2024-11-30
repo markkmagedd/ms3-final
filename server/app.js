@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const cors = require("cors");
 const adminUsername = "admin";
 const adminPassword = "admin";
 const mssql = require("mssql");
@@ -47,19 +46,24 @@ app.post("/admin-login", (req, res) => {
 });
 
 app.get("/all-customer-accounts", async (req, res) => {
+  //err handling done
   //1.2
   try {
-    var err;
     await mssql.connect(config);
     const result = await mssql.query("Select * from allCustomerAccounts");
-    if (result.recordset == null) {
-      err = "Account Not Found !";
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "No Subscribed Accounts At The Moment !",
+        success: false,
+        data: result.recordset,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
     }
-    res.json({
-      error: err,
-      success: true,
-      data: result.recordset,
-    });
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -71,16 +75,24 @@ app.get("/all-customer-accounts", async (req, res) => {
 });
 
 app.get("/physical-store-vouchers", async (req, res) => {
+  //err handling done
   //1.3
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * from PhysicalStoreVouchers");
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "No Physical Shops Available At The Moment !",
+        success: false,
+        data: result.recordset,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -92,16 +104,24 @@ app.get("/physical-store-vouchers", async (req, res) => {
 });
 
 app.get("/all-resolved-tickets", async (req, res) => {
+  //err handling done
   //1.4
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * from allResolvedTickets");
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: " There Are No Resolved Tickets !",
+        success: false,
+        data: result.recordset,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -113,16 +133,24 @@ app.get("/all-resolved-tickets", async (req, res) => {
 });
 
 app.get("/account-plan", async (req, res) => {
+  //err handling done
   //1.5
   try {
     await mssql.connect(config);
     const result = await mssql.query("EXEC Account_Plan");
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "No Subscribed Accounts At The Moment !",
+        success: false,
+        data: result.recordset,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -134,9 +162,9 @@ app.get("/account-plan", async (req, res) => {
 });
 
 app.post("/account-plan-date", async (req, res) => {
+  //err handling done
   //1.6
   try {
-    var err;
     const { date, planId } = req.body;
     if (!planId || !date) {
       return res.status(400).json({
@@ -154,15 +182,19 @@ app.post("/account-plan-date", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_Plan_date( @date , @planId )"
     );
-    if (result.recordset.length === 0) {
-      err = "Account Not Found !";
+    if (result.recordset.length === null) {
+      res.json({
+        error: "No Customer Accounts Found!",
+        success: false,
+        data: result.recordset,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
     }
-    console.log(err);
-    res.json({
-      error: err,
-      success: true,
-      data: result.recordset,
-    });
   } catch (err) {
     res.status(500).json({
       success: false,
