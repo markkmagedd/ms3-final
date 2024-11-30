@@ -21,13 +21,13 @@ export default function LayoutNavigation({ children }: { children: React.ReactNo
             </div>
             <div className="flex-1 ">
               <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2 mt-1">
-                <Link href="/" className={`${path.includes('/admin') ? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
+                <Link href="/admin" className={`${path.includes('/admin') ? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
                  <div className="border rounded-md border-foreground/30 dark:bg-black p-1 bg-white">
                  <Home className="size-4" />
                  </div>
                   Overview
                 </Link>
-                <Link href="/" className={`${path.includes('/jobs') ? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
+                <Link href="/profiles" className={`${path.includes('/profiles') ? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
                 <div className="border border-foreground/30 rounded-md dark:bg-black p-1 bg-white">
                   <Users className="h-4 w-4" />
                   </div>
@@ -51,7 +51,7 @@ export default function LayoutNavigation({ children }: { children: React.ReactNo
                 </div>
                   E-Stores
                 </Link>
-                <Link href="/" className={`${path.includes('/billing')? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
+                <Link href="/tickets" className={`${path.includes('/tickets')? 'bg-accent text-foreground' : ' text-muted-foreground'} font-semibold flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:text-primary hover:bg-accent duration-200`}>
                 <div className="border border-foreground/30 rounded-md dark:bg-black p-1 bg-white">
                 <Ticket className="h-4 w-4" />
                 </div>

@@ -49,11 +49,14 @@ app.post("/admin-login", (req, res) => {
 app.get("/all-customer-accounts", async (req, res) => {
   //1.2
   try {
+    var err;
     await mssql.connect(config);
     const result = await mssql.query("Select * from allCustomerAccounts");
-
+    if (result.recordset == null) {
+      err = "Account Not Found !";
+    }
     res.json({
-      error: null,
+      error: err,
       success: true,
       data: result.recordset,
     });
@@ -133,6 +136,7 @@ app.get("/account-plan", async (req, res) => {
 app.post("/account-plan-date", async (req, res) => {
   //1.6
   try {
+    var err;
     const { date, planId } = req.body;
     if (!planId || !date) {
       return res.status(400).json({
@@ -150,9 +154,11 @@ app.post("/account-plan-date", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_Plan_date( @date , @planId )"
     );
-
+    if (result.recordset === null) {
+      err = "Account Not Found !";
+    }
     res.json({
-      error: null,
+      error: err,
       success: true,
       data: result.recordset,
     });
