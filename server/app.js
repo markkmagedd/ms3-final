@@ -4,9 +4,12 @@ const cors = require("cors");
 const adminUsername = "admin";
 const adminPassword = "admin";
 const mssql = require("mssql");
+const bodyParser = require("body-parser");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const config = {
   user: "sa", // Your database username
@@ -564,23 +567,23 @@ app.get("/all-service-plans", async (req, res) => {
 app.post("/account-login-validation", async (req, res) => {
   //3.2
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
+    const { mobileNum, password } = req.body;
+    if (!mobileNum || !password) {
       return res.status(400).json({
         success: false,
-        error: "Both Username and Password must be provided",
+        error: "Both MobileNum and Password must be provided",
         data: null,
       });
     }
     await mssql.connect(config);
     const request = new mssql.Request();
 
-    request.input("username", mssql.Char(11), username);
-    request.input("password", mssql.Char(11), password);
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    request.input("password", mssql.VarCharChar(50), password);
 
     const result = await request.query(`
           DECLARE @result BIT;
-          SET @result = dbo.AccountLoginValidation(@username , @password);
+          SET @result = dbo.AccountLoginValidation(@mobileNum , @password);
           SELECT @result AS result;
         `);
 
@@ -775,9 +778,7 @@ app.post("/ticket-account-customer", async (req, res) => {
     await mssql.connect(config);
     const request = new mssql.Request();
     request.input("NID", mssql.Int, NID);
-    const result = await request.query(
-      "EXEC dbo.Cashback_Wallet_Customer @NID"
-    );
+    const result = await request.query("EXEC dbo.Ticket_Account_Customer @NID");
 
     res.json({
       error: null,
@@ -1015,11 +1016,122 @@ app.post("/initiate-plan-payment", async (req, res) => {
     request.input("mobileNum", mssql.Char(11), mobileNum);
     request.input("amount", mssql.Decimal(10, 1), amount);
     request.input("paymentMethod", mssql.VarChar(50), paymentMethod);
-    request.input("planId", mssql.Int, amount);
+    request.input("planId", mssql.Int, planId);
 
     const result = await request.query(
       "Exec Initiate_plan_payment @mobileNum, @amount, @paymentMethod,@planId"
     ); //check why the func is not working
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/payment-wallet-cashback", async (req, res) => {
+  //5.4
+  try {
+    const { mobileNum, paymentId, benefitId } = req.body;
+    if (!mobileNum || !paymentId || !benefitId) {
+      return res.status(400).json({
+        success: false,
+        error: "Mobile Number , Payment Id and Benefit Id must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    request.input("paymentId", mssql.Int, paymentId);
+    request.input("benefitId", mssql.Int, benefitId);
+
+    const result = await request.query(
+      " Exec Payment_wallet_cashback @mobileNum , @paymentId , @benefitId"
+    );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/initiate-balance-payment", async (req, res) => {
+  //5.5
+  try {
+    const { mobileNum, amount, paymentMethod } = req.body;
+    if (!mobileNum || !amount || !paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        error: "Mobile Number , Amount and Payment Method must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    request.input("amount", mssql.Decimal(10, 1), amount);
+    request.input("paymentMethod", mssql.VarChar(50), paymentMethod);
+
+    const result = await request.query(
+      " Exec Initiate_balance_payment @mobileNum , @amount , @paymentMethod"
+    );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/redeem-voucher-points", async (req, res) => {
+  //5.6
+  try {
+    const { mobileNum, voucherId } = req.body;
+    if (!mobileNum || !voucherId) {
+      return res.status(400).json({
+        success: false,
+        error: "Mobile Number and Voucher Id must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    request.input("voucherId", mssql.Int, voucherId);
+    const result = await request.query(
+      "Exec Redeem_voucher_points @mobile_num , @voucherId"
+    );
 
     res.json({
       error: null,
