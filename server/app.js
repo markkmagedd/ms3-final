@@ -154,9 +154,10 @@ app.post("/account-plan-date", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_Plan_date( @date , @planId )"
     );
-    if (result.recordset === null) {
+    if (result.recordset.length === 0) {
       err = "Account Not Found !";
     }
+    console.log(err);
     res.json({
       error: err,
       success: true,
