@@ -743,7 +743,7 @@ app.get("/all-benefits", async (req, res) => {
   try {
     await mssql.connect(config);
     const request = new mssql.Request();
-    const result = await request.query("SELECT * FROM dbo.allBenefits");
+    const result = await request.query("SELECT * FROM allBenefits");
 
     res.json({
       error: null,
@@ -924,6 +924,102 @@ app.post("/top-successful-payments", async (req, res) => {
     const result = await request.query(
       "Exec Top_Successful_Payments @mobile_num"
     );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.get("/all-shops", async (req, res) => {
+  //5.1
+  try {
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    const result = await request.query("SELECT * FROM allShops");
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/subscribed-plans-5-months", async (req, res) => {
+  //5.2
+  try {
+    const { mobileNum } = req.body;
+    if (!mobileNum) {
+      return res.status(400).json({
+        success: false,
+        error: "A Mobile Number must be provided",
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    const result = await request.query(
+      "SELECT * FROM dbo.Subscribed_plans_5_Months(@mobileNum)"
+    );
+
+    res.json({
+      error: null,
+      success: true,
+      data: result.recordset,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      data: null,
+    });
+  } finally {
+    await mssql.close();
+  }
+});
+
+app.post("/initiate-plan-payment", async (req, res) => {
+  //5.3
+  try {
+    const { mobileNum, amount, paymentMethod, planId } = req.body;
+    if (!mobileNum || !amount || !paymentMethod || !planId) {
+      return res.status(400).json({
+        success: false,
+        error: "Both Plan Name and Date must be provided", // update the error
+        data: null,
+      });
+    }
+    await mssql.connect(config);
+    const request = new mssql.Request();
+
+    request.input("mobileNum", mssql.Char(11), mobileNum);
+    request.input("amount", mssql.Decimal(10, 1), amount);
+    request.input("paymentMethod", mssql.VarChar(50), paymentMethod);
+    request.input("planId", mssql.Int, amount);
+
+    const result = await request.query(
+      "Exec Initiate_plan_payment @mobileNum, @amount, @paymentMethod,@planId"
+    ); //check why the func is not working
 
     res.json({
       error: null,
