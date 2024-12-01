@@ -182,7 +182,7 @@ app.post("/account-plan-date", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_Plan_date( @date , @planId )"
     );
-    if (result.recordset.length === null) {
+    if (result.recordset.length === 0) {
       res.json({
         error: "No Customer Accounts Found!",
         success: false,
@@ -226,12 +226,19 @@ app.post("/account-usage-plan", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_Usage_Plan( @mobileNum , @date )"
     );
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "This Mobile Number Is Doesn't Have A Valid Subscription !",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -244,6 +251,7 @@ app.post("/account-usage-plan", async (req, res) => {
 });
 
 app.post("/benefits-account", async (req, res) => {
+  //err done
   //1.8
   try {
     const { mobileNum, planId } = req.body;
@@ -265,9 +273,9 @@ app.post("/benefits-account", async (req, res) => {
     );
 
     res.json({
-      error: null,
+      error: "Benefits Deleted Successfully !",
       success: true,
-      data: result.recordset,
+      data: null,
     });
   } catch (err) {
     res.status(500).json({
