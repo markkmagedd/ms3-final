@@ -394,7 +394,6 @@ app.get("/account-payments", async (req, res) => {
 
 app.get("/cashback-number", async (req, res) => {
   //2.4
-  // Fix route, change .get -> .post, take walletID From body and change the SQL Query.
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * From Num_of_cashback");
@@ -665,7 +664,7 @@ app.post("/account-login-validation", async (req, res) => {
 });
 
 app.post("/consumption", async (req, res) => {
-  //3.3 
+  //3.3
   try {
     const { planName, startDate, endDate } = req.body;
     if (!planName || !startDate || !endDate) {
