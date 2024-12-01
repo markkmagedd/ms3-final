@@ -289,6 +289,7 @@ app.post("/benefits-account", async (req, res) => {
 });
 
 app.post("/account-sms-offers", async (req, res) => {
+  //err done
   //1.9
   try {
     const { mobileNum } = req.body;
@@ -307,12 +308,19 @@ app.post("/account-sms-offers", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Account_SMS_Offers( @mobileNum  )"
     );
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "There Are No SMS Offers At The Moment !",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -329,8 +337,6 @@ app.get("/customer-wallet", async (req, res) => {
   try {
     await mssql.connect(config);
     const result = await mssql.query("Select * From CustomerWallet");
-    console.log(result);
-
     res.json({
       error: null,
       success: true,
@@ -346,7 +352,7 @@ app.get("/customer-wallet", async (req, res) => {
   }
 });
 
-app.get("/customer-wallet", async (req, res) => {
+app.get("/e-shop-vouchers", async (req, res) => {
   //2.2
   try {
     await mssql.connect(config);
@@ -1067,7 +1073,7 @@ app.post("/initiate-plan-payment", async (req, res) => {
 
     const result = await request.query(
       "Exec Initiate_plan_payment @mobileNum, @amount, @paymentMethod,@planId"
-    ); //check why the func is not working
+    );
 
     res.json({
       error: null,
