@@ -228,7 +228,7 @@ app.post("/account-usage-plan", async (req, res) => {
     );
     if (result.recordset.length === 0) {
       res.json({
-        error: "This Mobile Number Is Doesn't Have A Valid Subscription !",
+        error: "This Mobile Number Doesn't Have A Valid Subscription !",
         success: false,
         data: null,
       });
