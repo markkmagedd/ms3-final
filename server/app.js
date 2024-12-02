@@ -5,7 +5,6 @@ const adminPassword = "admin";
 const mssql = require("mssql");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const FileStore = require("session-file-store")(session);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,10 +13,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
     secret: "your-secret-key",
-    store: new FileStore({ path: "./sessions", secret: "mySecret" }),
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false, maxAge: 60000 },
+    cookie: { secure: false, httpOnly: true, maxAge: 60000 },
   })
 );
 
@@ -759,7 +757,7 @@ app.post("/consumption", async (req, res) => {
 
     if (result.recordset.length === 0) {
       res.json({
-        error: "Consumption Is Unavailable At The Moment !!",
+        error: "No Consumption Available!!",
         success: false,
         data: null,
       });
@@ -947,13 +945,22 @@ app.post("/ticket-account-customer", async (req, res) => {
     await mssql.connect(config);
     const request = new mssql.Request();
     request.input("NID", mssql.Int, NID);
-    const result = await request.query("EXEC dbo.Ticket_Account_Customer @NID");
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    const result = await request.query(
+      "EXEC dbo.Ticket_Account_Customer @NID ;"
+    );
+    if (result.recordset[0][""] === 0) {
+      res.json({
+        error: "There Are No Unresolved Tickets Available At The Moment!!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -983,11 +990,19 @@ app.post("/account-highest-voucher", async (req, res) => {
       "EXEC Account_Highest_Voucher @mobileNum"
     );
 
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "There Are No Vouchers Available For This Number !!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1022,11 +1037,19 @@ app.post("/remaining-plan-amount", async (req, res) => {
             SELECT @result AS result;
           `); //it is written wrong in the schema
 
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset[0].result === 0) {
+      res.json({
+        error: "No Remaining Amount Available!!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1061,11 +1084,19 @@ app.post("/extra-plan-amount", async (req, res) => {
                 SELECT @result AS result;
             `); //it is written wrong in the schema
 
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset[0].result === 0) {
+      res.json({
+        error: "No Extra Amount Available !!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1092,14 +1123,21 @@ app.post("/top-successful-payments", async (req, res) => {
     const request = new mssql.Request();
     request.input("mobileNum", mssql.Char(11), mobileNum);
     const result = await request.query(
-      "Exec Top_Successful_Payments @mobile_num"
+      "Exec Top_Successful_Payments @mobileNum"
     );
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "There Are No Successful Payments For This Account !!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1117,12 +1155,19 @@ app.get("/all-shops", async (req, res) => {
     await mssql.connect(config);
     const request = new mssql.Request();
     const result = await request.query("SELECT * FROM allShops");
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error: "There Are No Shops Available At The Moment !!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1151,12 +1196,20 @@ app.post("/subscribed-plans-5-months", async (req, res) => {
     const result = await request.query(
       "SELECT * FROM dbo.Subscribed_plans_5_Months(@mobileNum)"
     );
-
-    res.json({
-      error: null,
-      success: true,
-      data: result.recordset,
-    });
+    if (result.recordset.length === 0) {
+      res.json({
+        error:
+          "This Account Has Not Subscribed To Any Services In The Past 5 Months!!",
+        success: false,
+        data: null,
+      });
+    } else {
+      res.json({
+        error: null,
+        success: true,
+        data: result.recordset,
+      });
+    }
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -1190,11 +1243,10 @@ app.post("/initiate-plan-payment", async (req, res) => {
     const result = await request.query(
       "Exec Initiate_plan_payment @mobileNum, @amount, @paymentMethod,@planId"
     );
-
     res.json({
       error: null,
       success: true,
-      data: result.recordset,
+      data: null,
     });
   } catch (err) {
     res.status(500).json({
@@ -1228,7 +1280,6 @@ app.post("/payment-wallet-cashback", async (req, res) => {
     const result = await request.query(
       " Exec Payment_wallet_cashback @mobileNum , @paymentId , @benefitId"
     );
-
     res.json({
       error: null,
       success: true,
