@@ -4,11 +4,22 @@ const adminUsername = "admin";
 const adminPassword = "admin";
 const mssql = require("mssql");
 const bodyParser = require("body-parser");
+const session = require("express-session");
+const FileStore = require("session-file-store")(session);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "your-secret-key",
+    store: new FileStore({ path: "./sessions", secret: "mySecret" }),
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 60000 },
+  })
+);
 
 const config = {
   user: "sa", // Your database username
@@ -35,6 +46,7 @@ app.get("/", (req, res) => {});
 app.post("/admin-login", (req, res) => {
   //1.1
   const { username, password } = req.body;
+
   if (username != adminUsername || password != adminPassword) {
     return res.status(200).json({
       error: "Username or Password is Incorrect",
@@ -705,10 +717,11 @@ app.post("/account-login-validation", async (req, res) => {
         data: result.recordset,
       });
     } else {
+      req.session.user = { mobileNum };
       res.json({
         error: null,
         success: true,
-        data: result.recordset,
+        data: mobileNum,
       });
     }
   } catch (err) {
